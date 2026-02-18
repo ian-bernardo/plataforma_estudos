@@ -447,7 +447,7 @@ function Column({
 }) {
   const { setNodeRef } = useDroppable({ id });
 
-  let bg = "bg-[#141414]";
+  let bg = "bg-[#202020]";
   let badgeBg = "#1C1C1E";
   let dotColor = "#8E8B86";
 
