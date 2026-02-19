@@ -93,6 +93,17 @@ export default function Painel() {
     situacao: STATUS.NAO_INICIADO,
   });
 
+  const [temaClaro, setTemaClaro] = useState(false);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    if (temaClaro) {
+      html.classList.add("light");
+    } else {
+      html.classList.remove("light");
+    }
+  }, [temaClaro]);
+
   function abrirDrawer() {
     setDrawerAberto(true);
   }
@@ -172,9 +183,21 @@ export default function Painel() {
   );
 
   const chartData = [
-    { name: "Não Iniciado", value: naoIniciado.length, color: "#8E8B86" },
-    { name: "Em Andamento", value: emAndamento.length, color: "#2783DE" },
-    { name: "Concluído", value: concluido.length, color: "#46A171" },
+    {
+      name: "Não Iniciado",
+      value: naoIniciado.length,
+      color: "var(--kanban-nao-dot)",
+    },
+    {
+      name: "Em Andamento",
+      value: emAndamento.length,
+      color: "var(--kanban-and-dot)",
+    },
+    {
+      name: "Concluído",
+      value: concluido.length,
+      color: "var(--kanban-con-dot)",
+    },
   ];
 
   useEffect(() => {
@@ -317,11 +340,19 @@ export default function Painel() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-white p-8">
+    <div className={`min-h-screen p-8 ${temaClaro ? "light" : ""}`}>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
 
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
+          {/* BOTÃO TEMPLATE */}
+          <button
+            onClick={() => setTemaClaro(!temaClaro)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
+          >
+            {temaClaro ? "🌙" : "☀️"}
+          </button>
+
           <button
             onClick={() => router.push("/disciplinas")}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
@@ -393,7 +424,7 @@ export default function Painel() {
         <div className="flex flex-col gap-6 h-full">
           <div className="flex flex-col h-full">
             {/* ================= GRÁFICO ================= */}
-            <div className="bg-[#202020] rounded-2xl p-6 border border-zinc-800 flex flex-col items-center">
+            <div className="bg-[var(--card)] rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center shadow-sm transition">
               <div className="text-zinc-400 text-sm mb-6">Gráfico</div>
 
               <div className="w-[260px] h-[260px] relative">
@@ -437,7 +468,9 @@ export default function Painel() {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="text-zinc-300">{item.name}</span>
+                    <span className="text-[var(--foreground)] opacity-80">
+                      {item.name}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -445,24 +478,27 @@ export default function Painel() {
           </div>{" "}
           {/* 👈 FECHA grid grid-cols-4 */}
           {/* ================= POMODORO ================= */}
-          <div className="bg-[#181818] h-full rounded-2xl p-6 border border-zinc-800 flex flex-col items-center mb-10">
-            <h3 className="text-sm text-zinc-400 mb-4">Pomodoro</h3>
+          <div className="bg-[var(--card)] h-full rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center mb-10 shadow-sm">
+            <h3 className="text-sm opacity-70 mb-4">Pomodoro</h3>
 
-            <span className="text-4xl font-bold mb-6">
+            <span className="text-5xl font-semibold mb-6">
               {formatTime(timeLeft)}
             </span>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setIsRunning(true)}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] text-white text-sm"
+                className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 transition"
+                style={{
+                  background: `linear-gradient(to right, var(--gradient-start), var(--gradient-end))`,
+                }}
               >
                 Iniciar
               </button>
 
               <button
                 onClick={() => setIsRunning(false)}
-                className="px-4 py-2 rounded-lg border border-zinc-600 text-zinc-300 text-sm"
+                className="px-4 py-2 rounded-lg border border-[var(--border)] opacity-80 hover:opacity-100 text-sm"
               >
                 Pausar
               </button>
@@ -472,7 +508,7 @@ export default function Painel() {
                   setIsRunning(false);
                   setTimeLeft(POMODORO_TIME);
                 }}
-                className="px-4 py-2 rounded-lg border border-zinc-600 text-zinc-300 text-sm"
+                className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--foreground)] opacity-80 hover:opacity-100 text-sm transition"
               >
                 Reset
               </button>
@@ -977,9 +1013,9 @@ export default function Painel() {
 
 function MetricCard({ title, value }: { title: string; value: number }) {
   return (
-    <div className="p-6 rounded-2xl bg-[#202020] border border-zinc-800">
-      <p className="text-sm text-zinc-400">{title}</p>
-      <p className="text-3xl font-bold mt-2">{value}</p>
+    <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-sm">
+      <p className="text-sm opacity-70">{title}</p>
+      <p className="text-4xl font-semibold mt-2">{value}</p>
     </div>
   );
 }
@@ -995,28 +1031,32 @@ function Column({
 }) {
   const { setNodeRef } = useDroppable({ id });
 
-  let bg = "bg-[#202020]";
-  let badgeBg = "#1C1C1E";
-  let dotColor = "#8E8B86";
+  let cardColor = "var(--kanban-nao-card)";
+  let badgeColor = "var(--kanban-nao-badge)";
+  let dotColor = "var(--kanban-nao-dot)";
 
   if (id === STATUS.EM_ANDAMENTO) {
-    bg = "bg-[#1A2027]";
-    badgeBg = "#356292";
-    dotColor = "#2783DE";
+    cardColor = "var(--kanban-and-card)";
+    badgeColor = "var(--kanban-and-badge)";
+    dotColor = "var(--kanban-and-dot)";
   }
 
   if (id === STATUS.CONCLUIDO) {
-    bg = "bg-[#1B211D]";
-    badgeBg = "#386C4E";
-    dotColor = "#46A171";
+    cardColor = "var(--kanban-con-card)";
+    badgeColor = "var(--kanban-con-badge)";
+    dotColor = "var(--kanban-con-dot)";
   }
 
   return (
-    <div ref={setNodeRef} className={`p-6 rounded-2xl ${bg} min-h-[400px]`}>
+    <div
+      ref={setNodeRef}
+      className="p-6 rounded-2xl min-h-[400px] transition"
+      style={{ backgroundColor: cardColor }}
+    >
       <div className="mb-6">
         <div
           className="flex items-center gap-2 px-5 py-2 rounded-full w-fit"
-          style={{ backgroundColor: badgeBg }}
+          style={{ backgroundColor: badgeColor }}
         >
           <div
             className="w-3 h-3 rounded-full"
@@ -1039,7 +1079,10 @@ function Column({
 
       <button
         onClick={abrirDrawer}
-        className="mt-6 w-full border border-zinc-600 rounded-xl py-3 hover:bg-zinc-800 transition"
+        className="mt-6 w-full border rounded-xl py-3 hover:opacity-80 transition text-white"
+        style={{
+          borderColor: "rgba(255,255,255,0.5)",
+        }}
       >
         + Nova Disciplina
       </button>
@@ -1059,18 +1102,24 @@ function DisciplinaCard({ disciplina }: { disciplina: Disciplina }) {
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...attributes}
       {...listeners}
-      className="bg-black/40 px-4 py-3 rounded-2xl border border-zinc-600 hover:border-zinc-400 transition cursor-grab active:cursor-grabbing select-none"
+      className="px-4 py-3 rounded-2xl border transition cursor-grab active:cursor-grabbing select-none shadow-sm"
+      style={{
+        ...style,
+        backgroundColor: "var(--card)",
+        borderColor: "var(--border)",
+      }}
     >
       <div className="flex items-start gap-3">
-        <div className="mt-1 text-zinc-500 shrink-0">
+        <div className="mt-1 opacity-60 shrink-0">
           <BookOpen size={18} strokeWidth={1.5} />
         </div>
         <div>
-          <p className="font-medium text-sm">{disciplina.nome}</p>
-          <p className="text-xs text-zinc-400 mt-1">{disciplina.semestre}</p>
+          <p className="font-medium text-sm text-[var(--foreground)]">
+            {disciplina.nome}
+          </p>
+          <p className="text-xs opacity-70 mt-1">{disciplina.semestre}</p>
         </div>
       </div>
     </div>
