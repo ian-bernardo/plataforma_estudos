@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen } from "lucide-react";
 
 type Prova = {
@@ -20,13 +20,21 @@ type Disciplina = {
 
 export default function Provas() {
   const router = useRouter();
-
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [provas, setProvas] = useState<Prova[]>([]);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [novaProva, setNovaProva] = useState<any | null>(null);
   const [confirmarExclusao, setConfirmarExclusao] = useState<Prova | null>(
     null,
   );
+
+  function navigateTo(path: string) {
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      router.push(path);
+    }, 150);
+  }
 
   async function carregar() {
     const { data: provasData } = await supabase.from("provas").select("*");
@@ -80,31 +88,51 @@ export default function Provas() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-white p-8">
+    <div
+      className={`
+    min-h-screen p-8
+    transition-all duration-200 ease-in-out
+    ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
+  `}
+      style={{
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
+      }}
+    >
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Provas</h1>
 
         <div className="flex gap-4">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
-          >
+          <NavButton href="/" onClick={() => navigateTo("/")}>
             <LayoutDashboard size={16} />
             Dashboard
-          </button>
+          </NavButton>
 
-          <button
-            onClick={() => router.push("/disciplinas")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
+          <NavButton
+            href="/disciplinas"
+            onClick={() => navigateTo("/disciplinas")}
           >
             <BookOpen size={16} />
             Disciplinas
-          </button>
+          </NavButton>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-[#202020]">
-        <div className="grid grid-cols-5 px-6 py-4 border-b border-zinc-700 text-xs uppercase tracking-wider text-zinc-400">
+      <div
+        className="overflow-hidden rounded-2xl border"
+        style={{
+          borderColor: "var(--border)",
+          backgroundColor: "var(--card)",
+        }}
+      >
+        <div
+          className="grid grid-cols-5 px-6 py-4 border-b text-xs uppercase tracking-wider"
+          style={{
+            borderColor: "var(--border)",
+            color: "var(--foreground)",
+            opacity: 0.6,
+          }}
+        >
           <div>Título</div>
           <div>Disciplina</div>
           <div>Data</div>
@@ -115,7 +143,10 @@ export default function Provas() {
         {provas.map((p) => (
           <div
             key={p.id}
-            className="grid grid-cols-5 px-6 py-4 border-b border-zinc-800 text-sm items-center hover:bg-zinc-900/40 transition"
+            className="grid grid-cols-5 px-6 py-4 border-b text-sm items-center transition"
+            style={{
+              borderColor: "var(--border)",
+            }}
           >
             <div>{p.titulo}</div>
             <div>{getDisciplinaNome(p.disciplina_id)}</div>
@@ -135,9 +166,20 @@ export default function Provas() {
 
         {/* LINHA EDITÁVEL */}
         {novaProva && (
-          <div className="grid grid-cols-5 px-6 py-4 border-t border-zinc-800 bg-zinc-900/40 text-sm items-center gap-2">
+          <div
+            className="grid grid-cols-5 px-6 py-4 border-t text-sm items-center gap-2 transition"
+            style={{
+              borderColor: "var(--border)",
+              backgroundColor: "var(--background)",
+            }}
+          >
             <input
-              className="bg-zinc-800 px-2 py-1 rounded"
+              className="px-2 py-1 rounded text-sm transition"
+              style={{
+                backgroundColor: "var(--background)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
               placeholder="Título"
               value={novaProva.titulo}
               onChange={(e) =>
@@ -146,7 +188,12 @@ export default function Provas() {
             />
 
             <select
-              className="bg-zinc-800 px-2 py-1 rounded"
+              className="px-2 py-1 rounded text-sm transition"
+              style={{
+                backgroundColor: "var(--background)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
               value={novaProva.disciplina_id}
               onChange={(e) =>
                 setNovaProva({
@@ -165,14 +212,24 @@ export default function Provas() {
 
             <input
               type="date"
-              className="bg-zinc-800 px-2 py-1 rounded"
+              className="px-2 py-1 rounded text-sm transition"
+              style={{
+                backgroundColor: "var(--background)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
               onChange={(e) =>
                 setNovaProva({ ...novaProva, data: e.target.value })
               }
             />
 
             <select
-              className="bg-zinc-800 px-2 py-1 rounded"
+              className="px-2 py-1 rounded text-sm transition"
+              style={{
+                backgroundColor: "var(--background)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
               value={novaProva.situacao}
               onChange={(e) =>
                 setNovaProva({
@@ -207,7 +264,11 @@ export default function Provas() {
                 situacao: "Não Iniciado",
               })
             }
-            className="px-4 py-2 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-500 transition"
+            className="px-4 py-2 rounded-xl transition"
+            style={{
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
           >
             + Nova Prova
           </button>
@@ -216,11 +277,18 @@ export default function Provas() {
 
       {/* MODAL CONFIRMAÇÃO */}
       {confirmarExclusao && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#202020] p-8 rounded-2xl border border-zinc-700 w-[400px] text-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div
+            className="p-8 rounded-2xl border w-[400px] text-center transition"
+            style={{
+              backgroundColor: "var(--card)",
+              borderColor: "var(--border)",
+              color: "var(--foreground)",
+            }}
+          >
             <h2 className="text-xl font-semibold mb-4">Confirmar Exclusão</h2>
 
-            <p className="text-zinc-400 mb-6">
+            <p style={{ opacity: 0.7 }} className="mb-6">
               Tem certeza que deseja excluir <br />
               <span className="text-white font-medium">
                 {confirmarExclusao.titulo}
@@ -247,5 +315,45 @@ export default function Provas() {
         </div>
       )}
     </div>
+  );
+}
+function NavButton({
+  children,
+  href,
+  onClick,
+}: {
+  children: React.ReactNode;
+  href: string;
+  onClick: () => void;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <button
+      onClick={onClick}
+      className="
+        relative flex items-center gap-2 px-4 py-2 rounded-lg
+        transition-all duration-300 ease-out
+        border
+        active:scale-95
+      "
+      style={{
+        borderColor: "var(--border)",
+        color: "var(--foreground)",
+        backgroundColor: isActive ? "var(--card)" : "transparent",
+      }}
+    >
+      {children}
+
+      <span
+        className="absolute left-3 right-3 bottom-0 h-[2px] rounded-full transition-all duration-300"
+        style={{
+          background:
+            "linear-gradient(to right, var(--gradient-start), var(--gradient-end))",
+          opacity: isActive ? 1 : 0,
+        }}
+      />
+    </button>
   );
 }

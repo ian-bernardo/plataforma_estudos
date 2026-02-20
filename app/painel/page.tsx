@@ -1,10 +1,10 @@
 "use client";
 
-import { BookOpen, ClipboardList } from "lucide-react";
+import { BookOpen, ClipboardList, Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DndContext,
   DragEndEvent,
@@ -70,6 +70,7 @@ function formatarData(data: string | null) {
 
 export default function Painel() {
   const [drawerProvaAberto, setDrawerProvaAberto] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [novaProva, setNovaProva] = useState<Partial<Prova>>({
     titulo: "",
     disciplina_id: "",
@@ -96,13 +97,33 @@ export default function Painel() {
   const [temaClaro, setTemaClaro] = useState(false);
 
   useEffect(() => {
+    const temaSalvo = localStorage.getItem("tema");
+
+    if (temaSalvo === "light") {
+      setTemaClaro(true);
+      document.documentElement.classList.add("light");
+    }
+  }, []);
+
+  useEffect(() => {
     const html = document.documentElement;
+
     if (temaClaro) {
       html.classList.add("light");
+      localStorage.setItem("tema", "light");
     } else {
       html.classList.remove("light");
+      localStorage.setItem("tema", "dark");
     }
   }, [temaClaro]);
+
+  function navigateTo(path: string) {
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      router.push(path);
+    }, 150);
+  }
 
   function abrirDrawer() {
     setDrawerAberto(true);
@@ -162,6 +183,15 @@ export default function Painel() {
     }
 
     carregar();
+  }, []);
+  useEffect(() => {
+    const temaSalvo = localStorage.getItem("tema");
+
+    if (temaSalvo === "light") {
+      document.documentElement.classList.add("light");
+    } else {
+      document.documentElement.classList.remove("light");
+    }
   }, []);
 
   const naoIniciado = disciplinas.filter(
@@ -340,7 +370,17 @@ export default function Painel() {
   };
 
   return (
-    <div className={`min-h-screen p-8 ${temaClaro ? "light" : ""}`}>
+    <div
+      className={`
+    min-h-screen p-8
+    transition-all duration-200 ease-in-out
+    ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
+  `}
+      style={{
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
+      }}
+    >
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
 
@@ -348,26 +388,27 @@ export default function Painel() {
           {/* BOTÃO TEMPLATE */}
           <button
             onClick={() => setTemaClaro(!temaClaro)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
+            className="flex items-center justify-center w-10 h-10 rounded-lg transition"
+            style={{
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
           >
-            {temaClaro ? "🌙" : "☀️"}
+            {temaClaro ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          <button
+          <NavButton
+            href="/disciplinas"
             onClick={() => router.push("/disciplinas")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
           >
             <BookOpen size={18} />
-            <span className="text-sm">Disciplinas</span>
-          </button>
+            Disciplinas
+          </NavButton>
 
-          <button
-            onClick={() => router.push("/provas")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 transition"
-          >
+          <NavButton href="/provas" onClick={() => navigateTo("/provas")}>
             <ClipboardList size={18} />
-            <span className="text-sm">Provas</span>
-          </button>
+            Provas
+          </NavButton>
         </div>
       </div>
       {/* ================= MÉTRICAS ================= */}
@@ -409,9 +450,16 @@ export default function Painel() {
 
             <DragOverlay>
               {activeDisciplina && (
-                <div className="bg-black px-4 py-3 rounded-xl border border-zinc-600 shadow-2xl">
+                <div
+                  className="px-4 py-3 rounded-xl shadow-2xl transition"
+                  style={{
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                >
                   <p className="font-medium text-sm">{activeDisciplina.nome}</p>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <p style={{ opacity: 0.6 }} className="text-xs mt-1">
                     {activeDisciplina.semestre}
                   </p>
                 </div>
@@ -518,7 +566,7 @@ export default function Painel() {
       </div>
       {/* ================= GRADE ================= */}
       <div className="mt-20">
-        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
           DISCIPLINAS POR DIA
         </h2>
         {/* ================= FILTRO SEMESTRE ================= */}
@@ -529,7 +577,7 @@ export default function Painel() {
               onClick={() => setSemestreProvaSelecionado(sem)}
               className={`px-4 py-2 rounded-full text-sm transition ${
                 semestreProvaSelecionado === sem
-                  ? "bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] text-white"
+                  ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
                   : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
               }`}
             >
@@ -537,22 +585,46 @@ export default function Painel() {
             </button>
           ))}
         </div>
-        <div className="overflow-hidden rounded-xl border border-zinc-700">
-          <div className="grid grid-cols-5 bg-zinc-900 px-4 py-3 border-b border-zinc-700 uppercase tracking-wider text-xs font-semibold">
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+        <div
+          className="overflow-hidden rounded-xl border"
+          style={{
+            borderColor: "var(--border)",
+            backgroundColor: "var(--card)",
+          }}
+        >
+          <div
+            className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
+            style={{
+              backgroundColor: "var(--card)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Situação
             </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
+              Prova
+            </div>
+
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Disciplina
             </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
-              Dia
-            </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
-              Horário
-            </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
-              Período
+
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
+              Data
             </div>
           </div>
 
@@ -597,7 +669,11 @@ export default function Painel() {
         <div className="mt-6">
           <button
             onClick={() => setDrawerAberto(true)}
-            className="flex items-center gap-2 px-4 py-2 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-500 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl transition hover:opacity-80"
+            style={{
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
           >
             <span className="text-lg">+</span>
             Nova Disciplina
@@ -607,7 +683,7 @@ export default function Painel() {
       {/* 👈 FECHA GRADE */}
       {/* ================= PROVAS ================= */}
       <div className="mt-20">
-        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
           PROVAS
         </h2>
         {/* ================= FILTRO SEMESTRE PROVAS ================= */}
@@ -618,7 +694,7 @@ export default function Painel() {
               onClick={() => setSemestreSelecionado(sem)}
               className={`px-4 py-2 rounded-full text-sm transition ${
                 semestreSelecionado === sem
-                  ? "bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] text-white"
+                  ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
                   : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
               }`}
             >
@@ -627,18 +703,42 @@ export default function Painel() {
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-zinc-700">
-          <div className="grid grid-cols-4 bg-zinc-900 px-4 py-3 border-b border-zinc-700 uppercase tracking-wider text-xs font-semibold">
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+        <div
+          className="overflow-hidden rounded-xl border"
+          style={{
+            borderColor: "var(--border)",
+            backgroundColor: "var(--card)",
+          }}
+        >
+          <div
+            className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
+            style={{
+              borderColor: "var(--border)",
+              backgroundColor: "var(--card)",
+            }}
+          >
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Situação
             </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Prova
             </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Disciplina
             </div>
-            <div className="bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] bg-clip-text text-transparent">
+            <div
+              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text" }}
+            >
               Data
             </div>
           </div>
@@ -646,19 +746,22 @@ export default function Painel() {
           {provasFiltradas.map((p) => (
             <div
               key={p.id}
-              className="grid grid-cols-4 px-4 py-4 border-b border-zinc-800 hover:bg-zinc-900/40 transition"
+              className="grid grid-cols-4 px-4 py-4 transition"
+              style={{ borderBottom: "1px solid var(--border)" }}
             >
               <div>
                 <StatusBadge situacao={p.situacao} />
               </div>
 
-              <div className="text-sm text-white">{p.titulo}</div>
+              <div className="text-sm text-[var(--foreground)]">{p.titulo}</div>
 
-              <div className="text-sm text-white">
+              <div className="text-sm text-[var(--foreground)]">
                 {getDisciplinaNome(p.disciplina_id)}
               </div>
 
-              <div className="text-sm text-white">{formatarData(p.data)}</div>
+              <div className="text-sm text-[var(--foreground)]">
+                {formatarData(p.data)}
+              </div>
             </div>
           ))}
         </div>
@@ -684,7 +787,13 @@ export default function Painel() {
           />
 
           {/* Painel lateral */}
-          <div className="w-[600px] bg-[#181818] border-l border-zinc-800 p-8 overflow-y-auto animate-slideIn">
+          <div
+            className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
+            style={{
+              backgroundColor: "var(--card)",
+              borderLeft: "1px solid var(--border)",
+            }}
+          >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold">Nova Prova</h2>
 
@@ -703,7 +812,12 @@ export default function Painel() {
                   Título
                 </label>
                 <input
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   value={novaProva.titulo || ""}
                   onChange={(e) =>
                     setNovaProva({ ...novaProva, titulo: e.target.value })
@@ -717,7 +831,12 @@ export default function Painel() {
                   Disciplina
                 </label>
                 <select
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   value={novaProva.disciplina_id || ""}
                   onChange={(e) =>
                     setNovaProva({
@@ -740,7 +859,12 @@ export default function Painel() {
                 <label className="block text-sm text-zinc-400 mb-2">Data</label>
                 <input
                   type="date"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   onChange={(e) =>
                     setNovaProva({ ...novaProva, data: e.target.value })
                   }
@@ -753,7 +877,12 @@ export default function Painel() {
                   Situação
                 </label>
                 <select
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   value={novaProva.situacao}
                   onChange={(e) =>
                     setNovaProva({
@@ -770,7 +899,7 @@ export default function Painel() {
 
               <button
                 onClick={salvarProva}
-                className="w-full mt-4 bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
               >
                 Salvar Prova
               </button>
@@ -787,9 +916,17 @@ export default function Painel() {
           />
 
           {/* Painel lateral */}
-          <div className="w-[600px] bg-[#181818] border-l border-zinc-800 p-8 overflow-y-auto animate-slideIn">
+          <div
+            className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
+            style={{
+              backgroundColor: "var(--card)",
+              borderLeft: "1px solid var(--border)",
+            }}
+          >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold">Nova Disciplina</h2>
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                Nova Disciplina
+              </h2>
 
               <button
                 onClick={fecharDrawer}
@@ -804,7 +941,12 @@ export default function Painel() {
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">Nome</label>
                 <input
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-zinc-500"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   value={novaDisciplina.nome || ""}
                   onChange={(e) =>
                     setNovaDisciplina({
@@ -821,12 +963,17 @@ export default function Painel() {
                   Semestre
                 </label>
                 <input
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-zinc-500"
-                  value={novaDisciplina.semestre || ""}
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                  value={novaDisciplina.nome || ""}
                   onChange={(e) =>
                     setNovaDisciplina({
                       ...novaDisciplina,
-                      semestre: e.target.value,
+                      nome: e.target.value,
                     })
                   }
                 />
@@ -838,7 +985,12 @@ export default function Painel() {
                   Situação
                 </label>
                 <select
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                  className="w-full rounded-lg px-4 py-2 text-sm transition"
+                  style={{
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
                   value={novaDisciplina.situacao}
                   onChange={(e) =>
                     setNovaDisciplina({
@@ -861,7 +1013,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -877,7 +1034,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -895,7 +1057,12 @@ export default function Painel() {
                     Dia 1
                   </label>
                   <input
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -911,7 +1078,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="time"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -927,7 +1099,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="time"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -945,7 +1122,12 @@ export default function Painel() {
                     Dia 2
                   </label>
                   <input
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -961,7 +1143,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="time"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -977,7 +1164,12 @@ export default function Painel() {
                   </label>
                   <input
                     type="time"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
                     onChange={(e) =>
                       setNovaDisciplina({
                         ...novaDisciplina,
@@ -990,7 +1182,7 @@ export default function Painel() {
 
               <button
                 onClick={salvarDisciplina}
-                className="w-full mt-4 bg-gradient-to-r from-[#34BBC0] to-[#2B50CA] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
               >
                 Salvar Disciplina
               </button>
@@ -1138,19 +1330,30 @@ function Row({
   fim: string | null;
 }) {
   return (
-    <div className="grid grid-cols-5 px-4 py-4 border-b border-zinc-800 hover:bg-zinc-900/40 transition">
+    <div
+      className="grid grid-cols-5 px-4 py-4 transition"
+      style={{
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
       <div>
         <StatusBadge situacao={disciplina.situacao} />
       </div>
+
       <div className="flex items-center gap-2">
-        <BookOpen size={16} className="text-zinc-500" />
-        <span className="text-sm text-white">{disciplina.nome}</span>
+        <BookOpen size={16} className="opacity-60" />
+        <span className="text-sm text-[var(--foreground)]">
+          {disciplina.nome}
+        </span>
       </div>
-      <div className="text-sm text-white">{dia}</div>
-      <div className="text-sm text-white">
+
+      <div className="text-sm text-[var(--foreground)] opacity-80">{dia}</div>
+
+      <div className="text-sm text-[var(--foreground)] opacity-80">
         {inicio} - {fim}
       </div>
-      <div className="text-sm text-white">
+
+      <div className="text-sm text-[var(--foreground)] opacity-80">
         {formatarData(disciplina.data_inicio)} →{" "}
         {formatarData(disciplina.data_fim)}
       </div>
@@ -1159,26 +1362,71 @@ function Row({
 }
 
 function StatusBadge({ situacao }: { situacao: string }) {
-  let bg = "#1C1C1E";
-  let dot = "#8E8B86";
+  let bg = "var(--kanban-nao-badge)";
+  let dot = "var(--kanban-nao-dot)";
 
   if (situacao === STATUS.EM_ANDAMENTO) {
-    bg = "#356292";
-    dot = "#2783DE";
+    bg = "var(--kanban-and-badge)";
+    dot = "var(--kanban-and-dot)";
   }
 
   if (situacao === STATUS.CONCLUIDO) {
-    bg = "#386C4E";
-    dot = "#46A171";
+    bg = "var(--kanban-con-badge)";
+    dot = "var(--kanban-con-dot)";
   }
 
   return (
     <div
-      className="flex items-center gap-2 px-3 py-1 rounded-full text-xs text-white w-fit"
-      style={{ backgroundColor: bg }}
+      className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium w-fit"
+      style={{
+        backgroundColor: bg,
+        color: "white",
+      }}
     >
       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: dot }} />
       {situacao}
     </div>
+  );
+}
+
+function NavButton({
+  children,
+  href,
+  onClick,
+}: {
+  children: React.ReactNode;
+  href: string;
+  onClick: () => void;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <button
+      onClick={onClick}
+      className="
+        relative flex items-center gap-2 px-4 py-2 rounded-lg
+        transition-all duration-300 ease-out
+        border
+        active:scale-95
+      "
+      style={{
+        borderColor: "var(--border)",
+        color: "var(--foreground)",
+        backgroundColor: isActive ? "var(--card)" : "transparent",
+      }}
+    >
+      {children}
+
+      {/* Linha animada inferior */}
+      <span
+        className="absolute left-3 right-3 bottom-0 h-[2px] rounded-full transition-all duration-300"
+        style={{
+          background:
+            "linear-gradient(to right, var(--gradient-start), var(--gradient-end))",
+          opacity: isActive ? 1 : 0,
+        }}
+      />
+    </button>
   );
 }
