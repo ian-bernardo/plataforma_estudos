@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 export default function LoginFooter() {
   return (
     <div className="mt-6 text-center">
-      <p className="text-gray-600">
+      {/* <p className="text-gray-600">
         Não tem uma conta?{' '}
         <a 
           href="#" 
@@ -11,15 +11,15 @@ export default function LoginFooter() {
         >
           Cadastre-se
         </a>
-      </p>
-      
+      </p> */}
+
       <div className="mt-6 pt-6 border-t border-gray-200">
         <p className="text-sm text-gray-500">
-          Ao continuar, você concorda com nossos{' '}
+          Ao continuar, você concorda com nossos{" "}
           <a href="#" className="text-gray-700 hover:text-gray-900 underline">
             Termos de Uso
-          </a>{' '}
-          e{' '}
+          </a>{" "}
+          e{" "}
           <a href="#" className="text-gray-700 hover:text-gray-900 underline">
             Política de Privacidade
           </a>
