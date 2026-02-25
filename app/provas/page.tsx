@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen } from "lucide-react";
+import { createClient } from "../lib/supabase/client";
 
 type Prova = {
   id: string;
@@ -27,6 +28,7 @@ export default function Provas() {
   const [confirmarExclusao, setConfirmarExclusao] = useState<Prova | null>(
     null,
   );
+  const supabase = createClient();
 
   function navigateTo(path: string) {
     setIsTransitioning(true);

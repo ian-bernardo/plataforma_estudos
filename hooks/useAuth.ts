@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/app/lib/supabase";
+import { createClient } from "@/app/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 interface LoginCredentials {
@@ -18,6 +18,7 @@ export function useAuth() {
   const [error, setError] = useState<AuthError | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
 
   const login = async ({ email, password }: LoginCredentials) => {
     setIsLoading(true);

@@ -2,7 +2,7 @@
 
 import { BookOpen, ClipboardList, Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { createClient } from "../lib/supabase/client";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -93,6 +93,7 @@ export default function Painel() {
     semestre: "",
     situacao: STATUS.NAO_INICIADO,
   });
+  const supabase = createClient();
 
   const [temaClaro, setTemaClaro] = useState(false);
 

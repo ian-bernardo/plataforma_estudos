@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { createClient } from "../lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, FileText } from "lucide-react";
 
@@ -25,6 +25,7 @@ export default function Disciplinas() {
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [novaDisciplina, setNovaDisciplina] = useState<any | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const supabase = createClient();
 
   // 🔴 NOVO ESTADO PARA CONFIRMAÇÃO
   const [confirmarExclusao, setConfirmarExclusao] = useState<Disciplina | null>(
