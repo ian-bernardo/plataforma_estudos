@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "../lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, FileText } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
 type Disciplina = {
   id: string;
@@ -26,6 +27,7 @@ export default function Disciplinas() {
   const [novaDisciplina, setNovaDisciplina] = useState<any | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const supabase = createClient();
+  const { userId, loading: loadingUser } = useUser();
 
   // 🔴 NOVO ESTADO PARA CONFIRMAÇÃO
   const [confirmarExclusao, setConfirmarExclusao] = useState<Disciplina | null>(
@@ -55,7 +57,7 @@ export default function Disciplinas() {
   }
 
   async function salvar() {
-    if (!novaDisciplina.nome) return;
+    if (!novaDisciplina.nome || !userId) return;
 
     const { error } = await supabase.from("disciplinas").insert([
       {
@@ -70,6 +72,7 @@ export default function Disciplinas() {
         dia_2: novaDisciplina.dia_2,
         horario_2_inicio: novaDisciplina.horario_2_inicio,
         horario_2_final: novaDisciplina.horario_2_final,
+        user_id: userId, // ✅ Adiciona o ID do usuárioo,
       },
     ]);
 

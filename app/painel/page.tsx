@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "../lib/supabase/client";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useRouter, usePathname } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
 import {
   DndContext,
   DragEndEvent,
@@ -94,6 +95,7 @@ export default function Painel() {
     situacao: STATUS.NAO_INICIADO,
   });
   const supabase = createClient();
+  const { userId, loading: loadingUser } = useUser();
 
   const [temaClaro, setTemaClaro] = useState(false);
 
@@ -135,7 +137,7 @@ export default function Painel() {
   }
 
   async function salvarDisciplina() {
-    if (!novaDisciplina.nome) return;
+    if (!novaDisciplina.nome || !userId) return;
 
     const { error } = await supabase.from("disciplinas").insert([
       {
@@ -150,6 +152,7 @@ export default function Painel() {
         dia_2: novaDisciplina.dia_2,
         horario_2_inicio: novaDisciplina.horario_2_inicio,
         horario_2_final: novaDisciplina.horario_2_final,
+        user_id: userId, // ✅ Adiciona o ID do usuário
       },
     ]);
 
@@ -265,7 +268,7 @@ export default function Painel() {
   const activeDisciplina = disciplinas.find((d) => d.id === activeId);
 
   async function salvarProva() {
-    if (!novaProva.titulo || !novaProva.disciplina_id) return;
+    if (!novaProva.titulo || !novaProva.disciplina_id || !userId) return;
 
     const { error } = await supabase.from("provas").insert([
       {
@@ -273,6 +276,7 @@ export default function Painel() {
         disciplina_id: novaProva.disciplina_id,
         data: novaProva.data,
         situacao: novaProva.situacao,
+        user_id: userId, // ✅ Adiciona o ID do usuário
       },
     ]);
 

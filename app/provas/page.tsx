@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen } from "lucide-react";
 import { createClient } from "../lib/supabase/client";
+import { useUser } from "@/hooks/useUser";
 
 type Prova = {
   id: string;
@@ -29,6 +29,7 @@ export default function Provas() {
     null,
   );
   const supabase = createClient();
+  const { userId, loading: loadingUser } = useUser();
 
   function navigateTo(path: string) {
     setIsTransitioning(true);
@@ -58,7 +59,7 @@ export default function Provas() {
   }
 
   async function salvar() {
-    if (!novaProva.titulo || !novaProva.disciplina_id) return;
+    if (!novaProva.titulo || !novaProva.disciplina_id || !userId) return;
 
     const { error } = await supabase.from("provas").insert([
       {
@@ -66,6 +67,7 @@ export default function Provas() {
         disciplina_id: novaProva.disciplina_id,
         data: novaProva.data,
         situacao: novaProva.situacao,
+        user_id: userId, // ✅ Adiciona o ID do usuário
       },
     ]);
 
