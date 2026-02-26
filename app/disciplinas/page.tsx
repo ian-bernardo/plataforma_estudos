@@ -44,7 +44,12 @@ export default function Disciplinas() {
   }
 
   async function carregar() {
-    const { data } = await supabase.from("disciplinas").select("*");
+    if (!userId) return;
+    
+    const { data } = await supabase
+      .from("disciplinas")
+      .select("*")
+      .eq('user_id', userId);
     setDisciplinas(data || []);
   }
 

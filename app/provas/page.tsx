@@ -41,10 +41,16 @@ export default function Provas() {
   }
 
   async function carregar() {
-    const { data: provasData } = await supabase.from("provas").select("*");
+    if (!userId) return;
+    
+    const { data: provasData } = await supabase
+      .from("provas")
+      .select("*")
+      .eq('user_id', userId);
     const { data: disciplinasData } = await supabase
       .from("disciplinas")
-      .select("id, nome");
+      .select("id, nome")
+      .eq('user_id', userId);
 
     setProvas(provasData || []);
     setDisciplinas(disciplinasData || []);

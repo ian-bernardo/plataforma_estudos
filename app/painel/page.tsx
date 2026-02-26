@@ -176,11 +176,17 @@ export default function Painel() {
 
   useEffect(() => {
     async function carregar() {
+      if (!userId) return;
+
       const { data: disciplinasData } = await supabase
         .from("disciplinas")
-        .select("*");
+        .select("*")
+        .eq("user_id", userId);
 
-      const { data: provasData } = await supabase.from("provas").select("*");
+      const { data: provasData } = await supabase
+        .from("provas")
+        .select("*")
+        .eq("user_id", userId);
 
       setDisciplinas(disciplinasData || []);
       setProvas(provasData || []);
@@ -188,7 +194,7 @@ export default function Painel() {
     }
 
     carregar();
-  }, []);
+  }, [userId]);
   useEffect(() => {
     const temaSalvo = localStorage.getItem("tema");
 
@@ -291,7 +297,10 @@ export default function Painel() {
       });
 
       // Atualiza lista sem reload
-      const { data } = await supabase.from("provas").select("*");
+      const { data } = await supabase
+        .from("provas")
+        .select("*")
+        .eq("user_id", userId);
       setProvas(data || []);
     }
   }
