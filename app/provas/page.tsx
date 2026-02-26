@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen } from "lucide-react";
 import { createClient } from "../lib/supabase/client";
 import { useUser } from "@/hooks/useUser";
+import Header from "@/components/ui/Header";
 
 type Prova = {
   id: string;
@@ -92,12 +93,14 @@ export default function Provas() {
   }, []);
 
   return (
-    <div
-      className={`
-    min-h-screen p-8
-    transition-all duration-200 ease-in-out
-    ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
-  `}
+    <>
+      <Header />
+      <div
+        className={`
+      min-h-screen pt-24 px-8 pb-8
+      transition-all duration-200 ease-in-out
+      ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
+    `}
       style={{
         backgroundColor: "var(--background)",
         color: "var(--foreground)",
@@ -319,6 +322,7 @@ export default function Provas() {
         </div>
       )}
     </div>
+    </>
   );
 }
 function NavButton({

@@ -6,6 +6,7 @@ import { createClient } from "../lib/supabase/client";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
+import Header from "@/components/ui/Header";
 import {
   DndContext,
   DragEndEvent,
@@ -375,827 +376,838 @@ export default function Painel() {
   };
 
   return (
-    <div
-      className={`
-    min-h-screen p-8
-    transition-all duration-200 ease-in-out
-    ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
-  `}
-      style={{
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+    <>
+      <Header />
+      <div
+        className={`
+      min-h-screen pt-24 px-8 pb-8
+      transition-all duration-200 ease-in-out
+      ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
+    `}
+        style={{
+          backgroundColor: "var(--background)",
+          color: "var(--foreground)",
+        }}
+      >
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
 
-        <div className="flex items-center gap-4">
-          {/* BOTÃO TEMPLATE */}
-          <button
-            onClick={() => setTemaClaro(!temaClaro)}
-            className="flex items-center justify-center w-10 h-10 rounded-lg transition"
-            style={{
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-            }}
-          >
-            {temaClaro ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
+          <div className="flex items-center gap-4">
+            {/* BOTÃO TEMPLATE */}
+            <button
+              onClick={() => setTemaClaro(!temaClaro)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg transition"
+              style={{
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+            >
+              {temaClaro ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
 
-          <NavButton
-            href="/disciplinas"
-            onClick={() => router.push("/disciplinas")}
-          >
-            <BookOpen size={18} />
-            Disciplinas
-          </NavButton>
+            <NavButton
+              href="/disciplinas"
+              onClick={() => router.push("/disciplinas")}
+            >
+              <BookOpen size={18} />
+              Disciplinas
+            </NavButton>
 
-          <NavButton href="/provas" onClick={() => navigateTo("/provas")}>
-            <ClipboardList size={18} />
-            Provas
-          </NavButton>
-        </div>
-      </div>
-      {/* ================= MÉTRICAS ================= */}
-      <div className="grid grid-cols-4 gap-8 items-start">
-        {/* LADO ESQUERDO */}
-        <div className="col-span-3 space-y-10">
-          {/* MÉTRICAS */}
-          <div className="grid grid-cols-3 gap-6">
-            <MetricCard title="Não Iniciado" value={naoIniciado.length} />
-            <MetricCard title="Em Andamento" value={emAndamento.length} />
-            <MetricCard title="Concluído" value={concluido.length} />
+            <NavButton href="/provas" onClick={() => navigateTo("/provas")}>
+              <ClipboardList size={18} />
+              Provas
+            </NavButton>
           </div>
-
-          {/* KANBAN */}
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragStart={(e) => setActiveId(e.active.id as string)}
-            onDragEnd={handleDragEnd}
-          >
+        </div>
+        {/* ================= MÉTRICAS ================= */}
+        <div className="grid grid-cols-4 gap-8 items-start">
+          {/* LADO ESQUERDO */}
+          <div className="col-span-3 space-y-10">
+            {/* MÉTRICAS */}
             <div className="grid grid-cols-3 gap-6">
-              <Column
-                id={STATUS.NAO_INICIADO}
-                disciplinas={naoIniciado}
-                abrirDrawer={() => setDrawerAberto(true)}
-              />
-
-              <Column
-                id={STATUS.EM_ANDAMENTO}
-                disciplinas={emAndamento}
-                abrirDrawer={() => setDrawerAberto(true)}
-              />
-
-              <Column
-                id={STATUS.CONCLUIDO}
-                disciplinas={concluido}
-                abrirDrawer={() => setDrawerAberto(true)}
-              />
+              <MetricCard title="Não Iniciado" value={naoIniciado.length} />
+              <MetricCard title="Em Andamento" value={emAndamento.length} />
+              <MetricCard title="Concluído" value={concluido.length} />
             </div>
 
-            <DragOverlay>
-              {activeDisciplina && (
-                <div
-                  className="px-4 py-3 rounded-xl shadow-2xl transition"
-                  style={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                >
-                  <p className="font-medium text-sm">{activeDisciplina.nome}</p>
-                  <p style={{ opacity: 0.6 }} className="text-xs mt-1">
-                    {activeDisciplina.semestre}
-                  </p>
-                </div>
-              )}
-            </DragOverlay>
-          </DndContext>
-        </div>
+            {/* KANBAN */}
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragStart={(e) => setActiveId(e.active.id as string)}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="grid grid-cols-3 gap-6">
+                <Column
+                  id={STATUS.NAO_INICIADO}
+                  disciplinas={naoIniciado}
+                  abrirDrawer={() => setDrawerAberto(true)}
+                />
 
-        {/* LADO DIREITO */}
-        <div className="flex flex-col gap-6 h-full">
-          <div className="flex flex-col h-full">
-            {/* ================= GRÁFICO ================= */}
-            <div className="bg-[var(--card)] rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center shadow-sm transition">
-              <div className="text-zinc-400 text-sm mb-6">Gráfico</div>
+                <Column
+                  id={STATUS.EM_ANDAMENTO}
+                  disciplinas={emAndamento}
+                  abrirDrawer={() => setDrawerAberto(true)}
+                />
 
-              <div className="w-[260px] h-[260px] relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="value"
-                      innerRadius={80}
-                      outerRadius={120}
-                      paddingAngle={3}
-                      stroke="none"
-                      isAnimationActive={false}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={index} fill={entry.color} />
-                      ))}
-                    </Pie>
-
-                    <Tooltip
-                      content={<CustomTooltip />}
-                      wrapperStyle={{
-                        pointerEvents: "none",
-                        zIndex: 9999,
-                      }}
-                      position={{ x: undefined, y: undefined }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-5xl font-bold">{total}</span>
-                  <span className="text-sm text-zinc-400">Total</span>
-                </div>
+                <Column
+                  id={STATUS.CONCLUIDO}
+                  disciplinas={concluido}
+                  abrirDrawer={() => setDrawerAberto(true)}
+                />
               </div>
 
-              <div className="mt-8 space-y-3 text-sm">
-                {chartData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-[var(--foreground)] opacity-80">
-                      {item.name}
-                    </span>
+              <DragOverlay>
+                {activeDisciplina && (
+                  <div
+                    className="px-4 py-3 rounded-xl shadow-2xl transition"
+                    style={{
+                      backgroundColor: "var(--card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    <p className="font-medium text-sm">
+                      {activeDisciplina.nome}
+                    </p>
+                    <p style={{ opacity: 0.6 }} className="text-xs mt-1">
+                      {activeDisciplina.semestre}
+                    </p>
                   </div>
-                ))}
+                )}
+              </DragOverlay>
+            </DndContext>
+          </div>
+
+          {/* LADO DIREITO */}
+          <div className="flex flex-col gap-6 h-full">
+            <div className="flex flex-col h-full">
+              {/* ================= GRÁFICO ================= */}
+              <div className="bg-[var(--card)] rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center shadow-sm transition">
+                <div className="text-zinc-400 text-sm mb-6">Gráfico</div>
+
+                <div className="w-[260px] h-[260px] relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        innerRadius={80}
+                        outerRadius={120}
+                        paddingAngle={3}
+                        stroke="none"
+                        isAnimationActive={false}
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={index} fill={entry.color} />
+                        ))}
+                      </Pie>
+
+                      <Tooltip
+                        content={<CustomTooltip />}
+                        wrapperStyle={{
+                          pointerEvents: "none",
+                          zIndex: 9999,
+                        }}
+                        position={{ x: undefined, y: undefined }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-5xl font-bold">{total}</span>
+                    <span className="text-sm text-zinc-400">Total</span>
+                  </div>
+                </div>
+
+                <div className="mt-8 space-y-3 text-sm">
+                  {chartData.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-[var(--foreground)] opacity-80">
+                        {item.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>{" "}
+            {/* 👈 FECHA grid grid-cols-4 */}
+            {/* ================= POMODORO ================= */}
+            <div className="bg-[var(--card)] h-full rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center mb-10 shadow-sm">
+              <h3 className="text-sm opacity-70 mb-4">Pomodoro</h3>
+
+              <span className="text-5xl font-semibold mb-6">
+                {formatTime(timeLeft)}
+              </span>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsRunning(true)}
+                  className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 transition"
+                  style={{
+                    background: `linear-gradient(to right, var(--gradient-start), var(--gradient-end))`,
+                  }}
+                >
+                  Iniciar
+                </button>
+
+                <button
+                  onClick={() => setIsRunning(false)}
+                  className="px-4 py-2 rounded-lg border border-[var(--border)] opacity-80 hover:opacity-100 text-sm"
+                >
+                  Pausar
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsRunning(false);
+                    setTimeLeft(POMODORO_TIME);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--foreground)] opacity-80 hover:opacity-100 text-sm transition"
+                >
+                  Reset
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+        {/* ================= GRADE ================= */}
+        <div className="mt-20">
+          <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
+            DISCIPLINAS POR DIA
+          </h2>
+          {/* ================= FILTRO SEMESTRE ================= */}
+          <div className="flex gap-4 mb-6 flex-wrap">
+            {semestres.map((sem) => (
+              <button
+                key={sem}
+                onClick={() => setSemestreProvaSelecionado(sem)}
+                className={`px-4 py-2 rounded-full text-sm transition ${
+                  semestreProvaSelecionado === sem
+                    ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
+                    : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                }`}
+              >
+                {sem}
+              </button>
+            ))}
+          </div>
+          <div
+            className="overflow-hidden rounded-xl border"
+            style={{
+              borderColor: "var(--border)",
+              backgroundColor: "var(--card)",
+            }}
+          >
+            <div
+              className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
+              style={{
+                backgroundColor: "var(--card)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Situação
+              </div>
+
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Prova
+              </div>
+
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Disciplina
+              </div>
+
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Data
+              </div>
+            </div>
+
+            {disciplinas
+              .filter((d) =>
+                semestreSelecionado === "Todos"
+                  ? true
+                  : d.semestre?.trim() === semestreSelecionado,
+              )
+              .flatMap((d) => {
+                const linhas = [];
+
+                if (d.dia_1) {
+                  linhas.push(
+                    <Row
+                      key={`${d.id}-1`}
+                      disciplina={d}
+                      dia={d.dia_1}
+                      inicio={d.horario_1_inicio}
+                      fim={d.horario_1_final}
+                    />,
+                  );
+                }
+
+                if (d.dia_2) {
+                  linhas.push(
+                    <Row
+                      key={`${d.id}-2`}
+                      disciplina={d}
+                      dia={d.dia_2}
+                      inicio={d.horario_2_inicio}
+                      fim={d.horario_2_final}
+                    />,
+                  );
+                }
+
+                return linhas;
+              })}
           </div>{" "}
-          {/* 👈 FECHA grid grid-cols-4 */}
-          {/* ================= POMODORO ================= */}
-          <div className="bg-[var(--card)] h-full rounded-2xl p-6 border border-[var(--border)] flex flex-col items-center mb-10 shadow-sm">
-            <h3 className="text-sm opacity-70 mb-4">Pomodoro</h3>
-
-            <span className="text-5xl font-semibold mb-6">
-              {formatTime(timeLeft)}
-            </span>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsRunning(true)}
-                className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90 transition"
-                style={{
-                  background: `linear-gradient(to right, var(--gradient-start), var(--gradient-end))`,
-                }}
-              >
-                Iniciar
-              </button>
-
-              <button
-                onClick={() => setIsRunning(false)}
-                className="px-4 py-2 rounded-lg border border-[var(--border)] opacity-80 hover:opacity-100 text-sm"
-              >
-                Pausar
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsRunning(false);
-                  setTimeLeft(POMODORO_TIME);
-                }}
-                className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--foreground)] opacity-80 hover:opacity-100 text-sm transition"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* ================= GRADE ================= */}
-      <div className="mt-20">
-        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
-          DISCIPLINAS POR DIA
-        </h2>
-        {/* ================= FILTRO SEMESTRE ================= */}
-        <div className="flex gap-4 mb-6 flex-wrap">
-          {semestres.map((sem) => (
+          {/* 👈 FECHA overflow-hidden */}
+          {/* 👇 BOTÃO FORA DA TABELA */}
+          <div className="mt-6">
             <button
-              key={sem}
-              onClick={() => setSemestreProvaSelecionado(sem)}
-              className={`px-4 py-2 rounded-full text-sm transition ${
-                semestreProvaSelecionado === sem
-                  ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
-                  : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
-              }`}
+              onClick={() => setDrawerAberto(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl transition hover:opacity-80"
+              style={{
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
             >
-              {sem}
+              <span className="text-lg">+</span>
+              Nova Disciplina
             </button>
-          ))}
-        </div>
-        <div
-          className="overflow-hidden rounded-xl border"
-          style={{
-            borderColor: "var(--border)",
-            backgroundColor: "var(--card)",
-          }}
-        >
-          <div
-            className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
-            style={{
-              backgroundColor: "var(--card)",
-              borderColor: "var(--border)",
-            }}
-          >
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Situação
-            </div>
-
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Prova
-            </div>
-
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Disciplina
-            </div>
-
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Data
-            </div>
           </div>
-
-          {disciplinas
-            .filter((d) =>
-              semestreSelecionado === "Todos"
-                ? true
-                : d.semestre?.trim() === semestreSelecionado,
-            )
-            .flatMap((d) => {
-              const linhas = [];
-
-              if (d.dia_1) {
-                linhas.push(
-                  <Row
-                    key={`${d.id}-1`}
-                    disciplina={d}
-                    dia={d.dia_1}
-                    inicio={d.horario_1_inicio}
-                    fim={d.horario_1_final}
-                  />,
-                );
-              }
-
-              if (d.dia_2) {
-                linhas.push(
-                  <Row
-                    key={`${d.id}-2`}
-                    disciplina={d}
-                    dia={d.dia_2}
-                    inicio={d.horario_2_inicio}
-                    fim={d.horario_2_final}
-                  />,
-                );
-              }
-
-              return linhas;
-            })}
         </div>{" "}
-        {/* 👈 FECHA overflow-hidden */}
-        {/* 👇 BOTÃO FORA DA TABELA */}
-        <div className="mt-6">
-          <button
-            onClick={() => setDrawerAberto(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl transition hover:opacity-80"
-            style={{
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-            }}
-          >
-            <span className="text-lg">+</span>
-            Nova Disciplina
-          </button>
-        </div>
-      </div>{" "}
-      {/* 👈 FECHA GRADE */}
-      {/* ================= PROVAS ================= */}
-      <div className="mt-20">
-        <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
-          PROVAS
-        </h2>
-        {/* ================= FILTRO SEMESTRE PROVAS ================= */}
-        <div className="flex gap-4 mb-6 flex-wrap">
-          {semestres.map((sem) => (
-            <button
-              key={`provas-${sem}`}
-              onClick={() => setSemestreSelecionado(sem)}
-              className={`px-4 py-2 rounded-full text-sm transition ${
-                semestreSelecionado === sem
-                  ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
-                  : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
-              }`}
-            >
-              {sem}
-            </button>
-          ))}
-        </div>
+        {/* 👈 FECHA GRADE */}
+        {/* ================= PROVAS ================= */}
+        <div className="mt-20">
+          <h2 className="text-xl font-semibold mb-6 tracking-wide bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">
+            PROVAS
+          </h2>
+          {/* ================= FILTRO SEMESTRE PROVAS ================= */}
+          <div className="flex gap-4 mb-6 flex-wrap">
+            {semestres.map((sem) => (
+              <button
+                key={`provas-${sem}`}
+                onClick={() => setSemestreSelecionado(sem)}
+                className={`px-4 py-2 rounded-full text-sm transition ${
+                  semestreSelecionado === sem
+                    ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white"
+                    : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                }`}
+              >
+                {sem}
+              </button>
+            ))}
+          </div>
 
-        <div
-          className="overflow-hidden rounded-xl border"
-          style={{
-            borderColor: "var(--border)",
-            backgroundColor: "var(--card)",
-          }}
-        >
           <div
-            className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
+            className="overflow-hidden rounded-xl border"
             style={{
               borderColor: "var(--border)",
               backgroundColor: "var(--card)",
             }}
           >
             <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
+              className="grid grid-cols-4 px-4 py-3 border-b uppercase tracking-wider text-xs font-semibold"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "var(--card)",
+              }}
             >
-              Situação
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Situação
+              </div>
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Prova
+              </div>
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Disciplina
+              </div>
+              <div
+                className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: "text" }}
+              >
+                Data
+              </div>
             </div>
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Prova
-            </div>
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Disciplina
-            </div>
-            <div
-              className="inline-block bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent"
-              style={{ WebkitBackgroundClip: "text" }}
-            >
-              Data
-            </div>
+
+            {provasFiltradas.map((p) => (
+              <div
+                key={p.id}
+                className="grid grid-cols-4 px-4 py-4 transition"
+                style={{ borderBottom: "1px solid var(--border)" }}
+              >
+                <div>
+                  <StatusBadge situacao={p.situacao} />
+                </div>
+
+                <div className="text-sm text-[var(--foreground)]">
+                  {p.titulo}
+                </div>
+
+                <div className="text-sm text-[var(--foreground)]">
+                  {getDisciplinaNome(p.disciplina_id)}
+                </div>
+
+                <div className="text-sm text-[var(--foreground)]">
+                  {formatarData(p.data)}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {provasFiltradas.map((p) => (
-            <div
-              key={p.id}
-              className="grid grid-cols-4 px-4 py-4 transition"
-              style={{ borderBottom: "1px solid var(--border)" }}
+          {/* BOTÃO NOVA PROVA */}
+          <div className="mt-6">
+            <button
+              onClick={() => setDrawerProvaAberto(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-500 transition"
             >
-              <div>
-                <StatusBadge situacao={p.situacao} />
+              <span className="text-lg">+</span>
+              Nova Prova
+            </button>
+          </div>
+        </div>
+        {/* ================= DRAWER ================= */}
+        {drawerProvaAberto && (
+          <div className="fixed inset-0 z-50 flex">
+            {/* Fundo */}
+            <div
+              className="flex-1 bg-black/50 backdrop-blur-sm"
+              onClick={() => setDrawerProvaAberto(false)}
+            />
+
+            {/* Painel lateral */}
+            <div
+              className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
+              style={{
+                backgroundColor: "var(--card)",
+                borderLeft: "1px solid var(--border)",
+              }}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-semibold">Nova Prova</h2>
+
+                <button
+                  onClick={() => setDrawerProvaAberto(false)}
+                  className="text-zinc-400 hover:text-white transition"
+                >
+                  ✕
+                </button>
               </div>
 
-              <div className="text-sm text-[var(--foreground)]">{p.titulo}</div>
+              <div className="space-y-6">
+                {/* Título */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Título
+                  </label>
+                  <input
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaProva.titulo || ""}
+                    onChange={(e) =>
+                      setNovaProva({ ...novaProva, titulo: e.target.value })
+                    }
+                  />
+                </div>
 
-              <div className="text-sm text-[var(--foreground)]">
-                {getDisciplinaNome(p.disciplina_id)}
-              </div>
+                {/* Disciplina */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Disciplina
+                  </label>
+                  <select
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaProva.disciplina_id || ""}
+                    onChange={(e) =>
+                      setNovaProva({
+                        ...novaProva,
+                        disciplina_id: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Selecione</option>
+                    {disciplinas.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="text-sm text-[var(--foreground)]">
-                {formatarData(p.data)}
+                {/* Data */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Data
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    onChange={(e) =>
+                      setNovaProva({ ...novaProva, data: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Situação */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Situação
+                  </label>
+                  <select
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaProva.situacao}
+                    onChange={(e) =>
+                      setNovaProva({
+                        ...novaProva,
+                        situacao: e.target.value,
+                      })
+                    }
+                  >
+                    <option>Não Iniciado</option>
+                    <option>Em Andamento</option>
+                    <option>Concluído</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={salvarProva}
+                  className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                >
+                  Salvar Prova
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+        {drawerAberto && (
+          <div className="fixed inset-0 z-50 flex">
+            {/* Fundo escuro */}
+            <div
+              className="flex-1 bg-black/50 backdrop-blur-sm"
+              onClick={fecharDrawer}
+            />
 
-        {/* BOTÃO NOVA PROVA */}
-        <div className="mt-6">
-          <button
-            onClick={() => setDrawerProvaAberto(true)}
-            className="flex items-center gap-2 px-4 py-2 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-500 transition"
-          >
-            <span className="text-lg">+</span>
-            Nova Prova
-          </button>
-        </div>
+            {/* Painel lateral */}
+            <div
+              className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
+              style={{
+                backgroundColor: "var(--card)",
+                borderLeft: "1px solid var(--border)",
+              }}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                  Nova Disciplina
+                </h2>
+
+                <button
+                  onClick={fecharDrawer}
+                  className="text-zinc-400 hover:text-white transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Nome */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Nome
+                  </label>
+                  <input
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaDisciplina.nome || ""}
+                    onChange={(e) =>
+                      setNovaDisciplina({
+                        ...novaDisciplina,
+                        nome: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Semestre */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Semestre
+                  </label>
+                  <input
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaDisciplina.nome || ""}
+                    onChange={(e) =>
+                      setNovaDisciplina({
+                        ...novaDisciplina,
+                        nome: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Situação */}
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    Situação
+                  </label>
+                  <select
+                    className="w-full rounded-lg px-4 py-2 text-sm transition"
+                    style={{
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                    value={novaDisciplina.situacao}
+                    onChange={(e) =>
+                      setNovaDisciplina({
+                        ...novaDisciplina,
+                        situacao: e.target.value,
+                      })
+                    }
+                  >
+                    {ALL_STATUS.map((status) => (
+                      <option key={status}>{status}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Período */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Data Início
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          data_inicio: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Data Fim
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          data_fim: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Dia 1 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Dia 1
+                    </label>
+                    <input
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          dia_1: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Início
+                    </label>
+                    <input
+                      type="time"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          horario_1_inicio: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Fim
+                    </label>
+                    <input
+                      type="time"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          horario_1_final: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Dia 2 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Dia 2
+                    </label>
+                    <input
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          dia_2: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Início
+                    </label>
+                    <input
+                      type="time"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          horario_2_inicio: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      Fim
+                    </label>
+                    <input
+                      type="time"
+                      className="w-full rounded-lg px-4 py-2 text-sm transition"
+                      style={{
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                      onChange={(e) =>
+                        setNovaDisciplina({
+                          ...novaDisciplina,
+                          horario_2_final: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={salvarDisciplina}
+                  className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                >
+                  Salvar Disciplina
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      {/* ================= DRAWER ================= */}
-      {drawerProvaAberto && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Fundo */}
-          <div
-            className="flex-1 bg-black/50 backdrop-blur-sm"
-            onClick={() => setDrawerProvaAberto(false)}
-          />
-
-          {/* Painel lateral */}
-          <div
-            className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
-            style={{
-              backgroundColor: "var(--card)",
-              borderLeft: "1px solid var(--border)",
-            }}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold">Nova Prova</h2>
-
-              <button
-                onClick={() => setDrawerProvaAberto(false)}
-                className="text-zinc-400 hover:text-white transition"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Título */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Título
-                </label>
-                <input
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaProva.titulo || ""}
-                  onChange={(e) =>
-                    setNovaProva({ ...novaProva, titulo: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Disciplina */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Disciplina
-                </label>
-                <select
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaProva.disciplina_id || ""}
-                  onChange={(e) =>
-                    setNovaProva({
-                      ...novaProva,
-                      disciplina_id: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Selecione</option>
-                  {disciplinas.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Data */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">Data</label>
-                <input
-                  type="date"
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  onChange={(e) =>
-                    setNovaProva({ ...novaProva, data: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Situação */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Situação
-                </label>
-                <select
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaProva.situacao}
-                  onChange={(e) =>
-                    setNovaProva({
-                      ...novaProva,
-                      situacao: e.target.value,
-                    })
-                  }
-                >
-                  <option>Não Iniciado</option>
-                  <option>Em Andamento</option>
-                  <option>Concluído</option>
-                </select>
-              </div>
-
-              <button
-                onClick={salvarProva}
-                className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
-              >
-                Salvar Prova
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {drawerAberto && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Fundo escuro */}
-          <div
-            className="flex-1 bg-black/50 backdrop-blur-sm"
-            onClick={fecharDrawer}
-          />
-
-          {/* Painel lateral */}
-          <div
-            className="w-[600px] p-8 overflow-y-auto animate-slideIn transition"
-            style={{
-              backgroundColor: "var(--card)",
-              borderLeft: "1px solid var(--border)",
-            }}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-[var(--foreground)]">
-                Nova Disciplina
-              </h2>
-
-              <button
-                onClick={fecharDrawer}
-                className="text-zinc-400 hover:text-white transition"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Nome */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">Nome</label>
-                <input
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaDisciplina.nome || ""}
-                  onChange={(e) =>
-                    setNovaDisciplina({
-                      ...novaDisciplina,
-                      nome: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              {/* Semestre */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Semestre
-                </label>
-                <input
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaDisciplina.nome || ""}
-                  onChange={(e) =>
-                    setNovaDisciplina({
-                      ...novaDisciplina,
-                      nome: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              {/* Situação */}
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Situação
-                </label>
-                <select
-                  className="w-full rounded-lg px-4 py-2 text-sm transition"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                  value={novaDisciplina.situacao}
-                  onChange={(e) =>
-                    setNovaDisciplina({
-                      ...novaDisciplina,
-                      situacao: e.target.value,
-                    })
-                  }
-                >
-                  {ALL_STATUS.map((status) => (
-                    <option key={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Período */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        data_inicio: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        data_fim: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Dia 1 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Dia 1
-                  </label>
-                  <input
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        dia_1: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Início
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        horario_1_inicio: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Fim
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        horario_1_final: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Dia 2 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Dia 2
-                  </label>
-                  <input
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        dia_2: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Início
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        horario_2_inicio: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    Fim
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full rounded-lg px-4 py-2 text-sm transition"
-                    style={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onChange={(e) =>
-                      setNovaDisciplina({
-                        ...novaDisciplina,
-                        horario_2_final: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={salvarDisciplina}
-                className="w-full mt-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
-              >
-                Salvar Disciplina
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
   {
     /* 👈 FECHA CONTAINER PRINCIPAL */
