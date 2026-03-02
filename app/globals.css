@@ -1,11 +1,70 @@
 @import "tailwindcss";
 
+/* ================= DARK (padrão) ================= */
 :root {
   --background: #191919;
+  --card: #202020;
   --foreground: #ffffff;
+  --border: #2a2a2a;
+
+  --gradient-start: #34bbc0;
+  --gradient-end: #2b50ca;
+
+  /* Gráfico */
+  --chart-nao-iniciado: #8e8b86;
+  --chart-em-andamento: #2783de;
+  --chart-concluido: #46a171;
+
+  /* Kanban - DARK */
+  --kanban-nao-card: #202020;
+  --kanban-nao-badge: #1c1c1e;
+  --kanban-nao-dot: #8e8b86;
+
+  --kanban-and-card: #1a2027;
+  --kanban-and-badge: #356292;
+  --kanban-and-dot: #2783de;
+
+  --kanban-con-card: #1b211d;
+  --kanban-con-badge: #386c4e;
+  --kanban-con-dot: #46a171;
+}
+
+/* ================= LIGHT ================= */
+.light {
+  --background: #ffffff;
+  --card: #ffffff;
+  --foreground: #111111;
+  --border: #e5e7eb;
+
+  --gradient-start: #ffb672;
+  --gradient-end: #e66379;
+
+  /* Gráfico */
+  --chart-nao-iniciado: #d4d4d4;
+  --chart-em-andamento: #ffb672;
+  --chart-concluido: #e66379;
+
+  /* Kanban - LIGHT */
+
+  --kanban-nao-card: #8e8b86;
+  --kanban-nao-badge: #64635e;
+  --kanban-nao-dot: #8e8b86;
+
+  /* Em andamento */
+  --kanban-and-card: #29486c;
+  --kanban-and-badge: #3a7ec7;
+  --kanban-and-dot: #379cff;
+
+  /* Concluído */
+  --kanban-con-card: #467d58;
+  --kanban-con-badge: #39a165;
+  --kanban-con-dot: #3cd082;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }
