@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, BookOpen } from "lucide-react";
+import { createClient } from "../lib/supabase/client";
+import { useUser } from "@/hooks/useUser";
+import Header from "@/components/ui/Header";
 
 type Prova = {
   id: string;
@@ -27,6 +29,8 @@ export default function Provas() {
   const [confirmarExclusao, setConfirmarExclusao] = useState<Prova | null>(
     null,
   );
+  const supabase = createClient();
+  const { userId, loading: loadingUser } = useUser();
 
   function navigateTo(path: string) {
     setIsTransitioning(true);
@@ -37,10 +41,16 @@ export default function Provas() {
   }
 
   async function carregar() {
-    const { data: provasData } = await supabase.from("provas").select("*");
+    if (!userId) return;
+    
+    const { data: provasData } = await supabase
+      .from("provas")
+      .select("*")
+      .eq('user_id', userId);
     const { data: disciplinasData } = await supabase
       .from("disciplinas")
-      .select("id, nome");
+      .select("id, nome")
+      .eq('user_id', userId);
 
     setProvas(provasData || []);
     setDisciplinas(disciplinasData || []);
@@ -56,7 +66,7 @@ export default function Provas() {
   }
 
   async function salvar() {
-    if (!novaProva.titulo || !novaProva.disciplina_id) return;
+    if (!novaProva.titulo || !novaProva.disciplina_id || !userId) return;
 
     const { error } = await supabase.from("provas").insert([
       {
@@ -64,6 +74,7 @@ export default function Provas() {
         disciplina_id: novaProva.disciplina_id,
         data: novaProva.data,
         situacao: novaProva.situacao,
+        user_id: userId, // ✅ Adiciona o ID do usuário
       },
     ]);
 
@@ -88,12 +99,14 @@ export default function Provas() {
   }, []);
 
   return (
-    <div
-      className={`
-    min-h-screen p-8
-    transition-all duration-200 ease-in-out
-    ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
-  `}
+    <>
+      <Header />
+      <div
+        className={`
+      min-h-screen pt-24 px-8 pb-8
+      transition-all duration-200 ease-in-out
+      ${isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}
+    `}
       style={{
         backgroundColor: "var(--background)",
         color: "var(--foreground)",
@@ -315,6 +328,7 @@ export default function Provas() {
         </div>
       )}
     </div>
+    </>
   );
 }
 function NavButton({
